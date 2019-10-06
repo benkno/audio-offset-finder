@@ -23,9 +23,9 @@ setup(
     name='audio-offset-finder',
     version='0.4.0',
     description='Find the offset of an audio file within another audio file',
-    author='Yves Raimond and Abram Hindle',
-    author_email='yves.raimond@bbc.co.uk and hindle1@ualberta.ca',
-    url='https://github.com/abramhindle/audio-offset-finder',
+    author='Yves Raimond, Abram Hindle and Benjamin Knowles',
+    author_email='yves.raimond@bbc.co.uk, hindle1@ualberta.ca and bknowles@protonmail.com',
+    url='https://github.com/benkno/audio-offset-finder',
     license='Apache License 2.0',
     packages=['audio_offset_finder'],
     install_requires=[

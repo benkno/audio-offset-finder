@@ -1,24 +1,14 @@
 audio-offset-finder
 ===================
 
-A simple tool for finding the offset of an audio file within another
-file. 
-
-Uses cross-correlation of standardised Mel-Frequency Cepstral Coefficients,
-so should be relatively robust to noise (encoding, compression, etc).
-
-It uses ffmpeg for transcoding, so should work on all file formats
-supported by ffmpeg.
-
-It was updated from the BBC code because the MFCC's performed poorly. We use
-librosa now and whole raft of MIR features to do the correlation.
-
-I've also allowed remixing of videos with the --ffmpeg flag
+This is a modified version of audio-offset-finder by BBC which has been
+refactored to better handle batch processing. It also includes the significant
+improvements from Abram Hindle's fork.
 
 Installation
 ------------
 
-    $ pip3 install --user git+https://github.com/abramhindle/audio-offset-finder.git
+    $ pip3 install --user git+https://github.com/benkno/audio-offset-finder.git
 
 Usage
 -----
