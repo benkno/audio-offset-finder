@@ -17,16 +17,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from audio_offset_finder.audio_offset_finder import find_offset, get_audio
+from audio_offset_finder.audio_offset_finder import BatchOffsetFinder
 import argparse, sys, os
+
+def parse_paths(paths):
+    full_paths = [os.path.join(os.getcwd(), path) for path in paths]
+    files = set()
+    for path in full_paths:
+        if os.path.isfile(path):
+            files.add(path)
+
+    return files
 
 def main():
     parser = argparse.ArgumentParser(
         description="Find the offset of an audio file within another one", 
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument('--find-offset-of', metavar='audio file', type=str, help='Find the offset of file')
-    parser.add_argument('--within', metavar='audio file', type=str, help='Within file')
+    parser.add_argument('--find-offset-of', nargs='+', metavar='audio file', type=str, help='Find the offset of file(s)')
+    parser.add_argument('--within', nargs='+', metavar='audio file', type=str, help='Within file(s)')
     parser.add_argument('--sr', metavar='sample rate', type=int, default=16000, help='Target sample rate during downsampling')
     parser.add_argument('--trim', metavar='seconds', type=int, default=60*30, help='Only uses first n seconds of audio files')
     parser.add_argument('--plotit',action='store_true', help='Plot the correlation function')
@@ -34,15 +43,24 @@ def main():
     args = parser.parse_args()
     if not (args.find_offset_of or args.within):
         parser.error("Please input audio files")
-    audio1 = get_audio(args.within, args.sr, args.trim)
-    audio2 = get_audio(args.find_offset_of, args.sr, args.trim)
-    offset, score = find_offset(audio1, audio2, args.sr, plotit=args.plotit)
-    print("Offset: %s (seconds)" % str(offset))
-    print("Standard score: %s" % str(score))
-    ffmpeg_cmd = "ffmpeg -i '%s' -ss  '%s' -i %s -map 0:v -map 1:a  -c copy -shortest '%s.sync.%s.mkv'" % (args.find_offset_of, offset, args.within, args.find_offset_of, ("{:.2f}".format(offset)))
-    print(ffmpeg_cmd)
-    if (args.ffmpeg):
-        os.system(ffmpeg_cmd)
+    if not (args.find_offset_of or args.find_offset_of):
+        parser.error("Please input audio files")
+
+    find_files = parse_paths(args.find_offset_of)
+    within_files = parse_paths(args.within)
+
+    batch = BatchOffsetFinder(within_files, args.sr, args.trim)
+    for find_file in find_files:
+        filename, offset, score = batch.find_offset(find_file)
+        print("Find: %s" % str(find_file))
+        print("Filename: %s" % str(filename))
+        print("Offset: %s (seconds)" % str(offset))
+        print("Standard score: %s" % str(score))
+
+        ffmpeg_cmd = "ffmpeg -i '%s' -ss  '%s' -i %s -map 0:v -map 1:a  -c copy -shortest '%s.sync.%s.mkv'" % (find_file, offset, filename, find_file, ("{:.2f}".format(offset)))
+        print(ffmpeg_cmd)
+        if (args.ffmpeg):
+            os.system(ffmpeg_cmd)
 
 if __name__ == '__main__':
     main()
