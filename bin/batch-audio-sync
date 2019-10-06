@@ -57,10 +57,13 @@ def main():
         print("Offset: %s (seconds)" % str(offset))
         print("Standard score: %s" % str(score))
 
-        ffmpeg_cmd = "ffmpeg -i '%s' -ss  '%s' -i %s -map 0:v -map 1:a  -c copy -shortest '%s.sync.%s.mkv'" % (find_file, offset, filename, find_file, ("{:.2f}".format(offset)))
+        out_file = "%s.sync.%s.mkv" % (find_file, ("{:.2f}".format(offset)))
+        ffmpeg_cmd = "ffmpeg -i '%s' -ss  '%s' -i %s -map 0:v -map 1:a -map 0:a -metadata:s:a:0 language=eng -disposition:a:0 default -c copy -map_metadata 0 -shortest '%s'" % (find_file, offset, filename, out_file)
         print(ffmpeg_cmd)
         if (args.ffmpeg):
             os.system(ffmpeg_cmd)
+            stat = os.stat(find_file)
+            os.utime(out_file, (stat.st_mtime, stat.st_mtime))
 
 if __name__ == '__main__':
     main()
